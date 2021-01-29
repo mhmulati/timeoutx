@@ -443,16 +443,17 @@ sub update_info_by_ucmd
 #
 sub print_uinfo
 {
-	my $reason = shift;
-	# Print generic information to STDERR
-	my $ticks = $timeinfo->{ticks_stale} || 0;
-	printf STDERR "${id_str}%s CPU %.2f MEM %d MAXMEM %d STALE %d MAXMEM_RSS %d\n", $reason, $timeinfo->{total}, $meminfo, $maxmem, ceil($ticks/$frequency), $maxmem_rss if ($reason ne 'FINISHED') || $info_on_success;
-
 	if (defined $output){
 		open(FIL,">>", $output) or die "Can't open output file: $!\n";
 	}else{
 		open(FIL, ">&STDERR");
 	}
+
+	my $reason = shift;
+	# Print generic information to FIL
+	my $ticks = $timeinfo->{ticks_stale} || 0;
+	printf FIL "${id_str}%s CPU %.2f MEM %d MAXMEM %d STALE %d MAXMEM_RSS %d\n", $reason, $timeinfo->{total}, $meminfo, $maxmem, ceil($ticks/$frequency), $maxmem_rss if ($reason ne 'FINISHED') || $info_on_success;
+
 	my ($strpat) = @_;
 	my $reftext="";
 	defined $reference and $reftext="ref=\"$reference\" ";
