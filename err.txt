@@ -1,5 +1,0 @@
-README.md
-bin
-err.txt
-src
-FINISHED CPU 0.00 MEM 0 MAXMEM -1 STALE 0 MAXMEM_RSS -1
