@@ -2,7 +2,7 @@
 INTRODUCTION
 ============
 
-The `timeout` script is a resource monitoring program for limiting time and
+The `timeoutx` script is a resource monitoring program for limiting time and
 memory consumption of black-boxed processes under Linux.  It runs a command
 you specify in the command line and watches for its memory and time
 consumption, interrupting the process if it goes out of the limits, and
@@ -13,13 +13,13 @@ is that it not only watches the process spawned directly, but also keeps track
 of its subsequently forked children.  You may choose if the scope of the
 watched processes is constrained by process group or by the process tree.
 
-`timeout` may optionally detect hangups, or print time consumption breakdown.
+`timeoutx` may optionally detect hangups, or print time consumption breakdown.
 
 
 ## Note: CGroups
 
 Linux now supports the CGroups feature, which is a much better method to track
-memory and time usage and not limited by the issues listed below. This `timeout`
+memory and time usage and not limited by the issues listed below. This `timeoutx`
 script **does not use CGroups**. While this script continues to work, if
 you are on Linux and need a more robust monitoring method you **should use something
 based on CGroups**. For system services, have a look at [available systemd
@@ -43,7 +43,7 @@ USAGE
 
 Like most of such wrapping scripts (nice, ionice, nohup), invocation is:
 
-  timeout [options] command [arguments]
+  timeoutx [options] command [arguments]
 
 The basic options are:
 
@@ -55,7 +55,7 @@ The basic options are:
   - `TIMEOUT` - time limit is exhausted
   - `MEM` - memory limit is exhausted
   - `HANGUP` - hangup detected (see below)
-  - `SIGNAL` - the timeout process was killed by a signal
+  - `SIGNAL` - the timeoutx process was killed by a signal
 
  After the message the number of seconds the process has been running for is
  printed.
@@ -77,14 +77,14 @@ Advanced options:
 
 * `--detect-hangups` - enable hangup detection.  If you have specified
   buckets through the `-p` option, then if the CPU time in any of the buckets
-  does not increase during some time, the timeout script reasons that the
+  does not increase during some time, the timeoutx script reasons that the
   controlled process hanged up, and terminates it.
 
 * `--no-info-on-success` - disable printing usage statistics if the
   controlled process has been successfully terminated.
 
 * `--confess`, `-c` - when killing the controlled process, return its exit
-  code or signal+128.  This also makes timeout to wait until the controlled
+  code or signal+128.  This also makes timeoutx to wait until the controlled
   process is terminated.  Without this option, the script returns zero.
 
 * `--memlimit-rss`, `-s` - monitor RSS (resident set size) memory limit
@@ -95,8 +95,8 @@ added in the future releases!
 Exit code of the script is the exit code of the controlled process.  If the
 controlled process was killed by a signal, the exit code is 128+N, where N is
 the number of the signal.  This simulates Bash exit code policy.  If the
-controlled process was terminated by the timeout script itself the script
-returns zero because having the timeout terminate the child is expected
+controlled process was terminated by the timeoutx script itself the script
+returns zero because having the timeoutx terminate the child is expected
 behavior.  If you want the child's return code in such a situation (which may
 be nonzero if the child handles SIGTERM), use `--confess` option.
 
@@ -109,40 +109,40 @@ utilize it.
 
 Basic time limiting:
 
-    ./timeout -t 2 perl -e 'while ($i<100000000) {$i++;}'
+    ./timeoutx -t 2 perl -e 'while ($i<100000000) {$i++;}'
     Outputs:
     TIMEOUT 2.04 CPU
 
 Basic memory limiting (1000M of virtual memory):
 
-    ./timeout -m 1000000 perl -e 'while ($i<100000000) {$a->{$i} = $i++;}'
+    ./timeoutx -m 1000000 perl -e 'while ($i<100000000) {$a->{$i} = $i++;}'
     Outputs:
     MEM 8.55
 
 Limit both time and memory (adjust number to match the command above):
 
-    ./timeout -m 1000000 -t 9 perl -e 'while ($i<100000000) {$x->{$i} = $i++;}'
+    ./timeoutx -m 1000000 -t 9 perl -e 'while ($i<100000000) {$x->{$i} = $i++;}'
     Outputs:
     MEM 8.57
-    ./timeout -m 1000000 -t 8 perl -e 'while ($i<100000000) {$x->{$i} = $i++;}'
+    ./timeoutx -m 1000000 -t 8 perl -e 'while ($i<100000000) {$x->{$i} = $i++;}'
     Outputs:
     TIMEOUT 8.02 CPU
 
 Limit time with a lot of short child processes:
 
-    ./timeout -t 2 perl -e 'while(1){ system qw(perl -e while($i<500){$i++;}); }'
+    ./timeoutx -t 2 perl -e 'while(1){ system qw(perl -e while($i<500){$i++;}); }'
     Outputs (in 4 seconds):
     TIMEOUT 2.01 CPU
 
 Collect statistics for `heavy' processes:
 
-    ./timeout -p '.*perl.*,PERL' perl -e 'for (1..20_000_000) {$i++;}'
+    ./timeoutx -p '.*perl.*,PERL' perl -e 'for (1..20_000_000) {$i++;}'
     Outputs:
     <time name="PERL">1400</time>
 
 Collect statistics for `lightweight' children:
 
-    ./timeout -t 10 -p '.*perl.*,PERL;CHILD:.*perl.*,KIDS' perl -e 'for (1..2_000) {system qw(perl -e while($i<500000){$i++;}); $i++;}'
+    ./timeoutx -t 10 -p '.*perl.*,PERL;CHILD:.*perl.*,KIDS' perl -e 'for (1..2_000) {system qw(perl -e while($i<500000){$i++;}); $i++;}'
     Outputs:
     TIMEOUT 10.18 CPU
     <time name="PERL">640</time>
@@ -151,18 +151,18 @@ Collect statistics for `lightweight' children:
 Lightweight children should be tracked with special `CHILD:` prefix in their
 pattern, compare the above with:
 
-    ./timeout -t 10 -p '.*perl.*,PERL' perl -e 'for (1..2_000) {system qw(perl -e while($i<500000){$i++;}); $i++;}'
+    ./timeoutx -t 10 -p '.*perl.*,PERL' perl -e 'for (1..2_000) {system qw(perl -e while($i<500000){$i++;}); $i++;}'
     Outputs:
     TIMEOUT 10.06 CPU
     <time name="PERL">830</time>
 
 Why is the rest not shown in the bucket statistics? All processes spawned are
-Perl-s, but the short-living ones aren't tracked fully, since timeout doesn't
+Perl-s, but the short-living ones aren't tracked fully, since timeoutx doesn't
 wake up often enough.
 
 Detect hangups:
 
-    ./timeout --detect-hangups -p '.*sleep.*,SLEEP' -t 5 sleep 10000
+    ./timeoutx --detect-hangups -p '.*sleep.*,SLEEP' -t 5 sleep 10000
     Outputs:
     HANGUP CPU 0.00 MEM 19760 MAXMEM 19760 STALE 6
 
