@@ -44,7 +44,7 @@ my $output = undef;
 my $reference = undef;
 my $watchfor = 'tree';
 # Requests per seccond
-my $frequency = 10;
+my $frequency = 1; # 10;
 # if we debug
 my $debug = '';
 # Whether we do not do this term-kill stuff, and just kill processes at once
@@ -78,7 +78,7 @@ GetOptions(
 
 my $uinfo = get_patterns($strpat);
 
-my $uwait = int (1_000_000 / $frequency);
+my $uwait = int (1_000_000 / ($frequency * 0.01));
 my $uflush_time = 100_000;
 
 # String to identify thes script's prints in the output
@@ -131,9 +131,9 @@ my $maxmem_rss = -1;
 #
 if(!$hanguplimit && $timelimit) {
 	# If unspecified, then wait for the same time the timelimit is set up
-	$ticklimit = $timelimit*$frequency;
+	$ticklimit = $timelimit*($frequency * 0.01);
 } elsif($hanguplimit) {
-	$ticklimit = $hanguplimit*$frequency;
+	$ticklimit = $hanguplimit*($frequency * 0.01);
 }
 
 my $status = 'wait';
@@ -452,7 +452,7 @@ sub print_uinfo
 	my $reason = shift;
 	# Print generic information to FIL
 	my $ticks = $timeinfo->{ticks_stale} || 0;
-	printf FIL "${id_str}%s CPU %.2f MEM %d MAXMEM %d STALE %d MAXMEM_RSS %d\n", $reason, $timeinfo->{total}, $meminfo, $maxmem, ceil($ticks/$frequency), $maxmem_rss if ($reason ne 'FINISHED') || $info_on_success;
+	printf FIL "${id_str}%s CPU %.2f MEM %d MAXMEM %d STALE %d MAXMEM_RSS %d\n", $reason, $timeinfo->{total}, $meminfo, $maxmem, ceil($ticks/($frequency * 0.01)), $maxmem_rss if ($reason ne 'FINISHED') || $info_on_success;
 
 	my ($strpat) = @_;
 	my $reftext="";
