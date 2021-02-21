@@ -30,7 +30,7 @@ usage_ends
 }
 # We use require_order because we don't want to process options of the command we run
 use Getopt::Long qw(:config require_order);
-use Time::HiRes qw( gettimeofday ); 
+use Time::HiRes qw( gettimeofday );
 
 my $timelimit = undef;
 my $hanguplimit = undef;
@@ -78,7 +78,7 @@ GetOptions(
 
 my $uinfo = get_patterns($strpat);
 
-my $uwait = int (1_000_000 / ($frequency * 0.01));
+my $uwait = int (1_000_000 / ($frequency * 0.1));
 my $uflush_time = 100_000;
 
 # String to identify thes script's prints in the output
@@ -435,11 +435,11 @@ sub update_info_by_ucmd
 
 #
 # TODO: If the file already exists, and it contains two or more <time>...</time>
-#       blocks with equals references and name 
-#       then we must be calculate summary time and write one <time>..</time> 
+#       blocks with equals references and name
+#       then we must be calculate summary time and write one <time>..</time>
 #       block  instead of more with equlas references.
 #       It needs for rule-instrumentor, that execute aspectator two time for
-#       one cc command. 
+#       one cc command.
 #
 sub print_uinfo
 {
